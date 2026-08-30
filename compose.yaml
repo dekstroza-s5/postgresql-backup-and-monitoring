@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment: {POSTGRES_USER: app, POSTGRES_PASSWORD: app, POSTGRES_DB: app}
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    ports: ["5432:5432"]
+    healthcheck: {test: ["CMD-SHELL", "pg_isready -U app"], interval: 5s, timeout: 3s, retries: 10}
+  exporter:
+    image: prometheuscommunity/postgres-exporter:v0.17.1
+    environment: {DATA_SOURCE_NAME: "postgresql://app:app@postgres:5432/app?sslmode=disable"}
+    ports: ["9187:9187"]
+    depends_on: {postgres: {condition: service_healthy}}
+volumes: {postgres-data: {}}
